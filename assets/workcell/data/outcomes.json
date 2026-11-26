@@ -1,0 +1,35 @@
+[
+  {
+    "id": "contact-feedback",
+    "success": true,
+    "recovered": true,
+    "peakSlip_mm": 5.758093717528577,
+    "maxNormal_N": 6.7108994255184555,
+    "events": [
+      {
+        "time": 5.503999999999616,
+        "label": "Downward load",
+        "kind": "disturbance"
+      },
+      {
+        "time": 6.303999999999528,
+        "label": "Stable hold",
+        "kind": "recovery"
+      }
+    ]
+  },
+  {
+    "id": "fixed-grip",
+    "success": false,
+    "recovered": false,
+    "peakSlip_mm": 180.1889999310313,
+    "maxNormal_N": 4.457133537040587,
+    "events": [
+      {
+        "time": 5.503999999999616,
+        "label": "Downward load",
+        "kind": "disturbance"
+      }
+    ]
+  }
+]
