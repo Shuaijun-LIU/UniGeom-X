@@ -28,7 +28,13 @@ Open `http://localhost:8000`. Use chapter tabs, arrow keys, Page Up / Page Down,
 
 ## Publication
 
-Static files live in `docs/`. The GitHub Actions workflow validates assets and deploys that directory to GitHub Pages on each push to `main`. The live presentation is at **[shuaijun-liu.github.io/UniGeom-X](https://shuaijun-liu.github.io/UniGeom-X/)**. The `gh-pages` branch was used to initialize the new Pages site; ongoing changes belong on `main` and are published by the workflow.
+Static files live in `docs/`. The live presentation is at **[shuaijun-liu.github.io/UniGeom-X](https://shuaijun-liu.github.io/UniGeom-X/)**. Source changes belong on `main`, where the validation workflow checks their integrity. GitHub Pages publishes the root of `gh-pages`, respecting the repository's deployment branch protection. After committing changes on `main`, publish with:
+
+```bash
+bash scripts/publish.sh
+```
+
+The script validates assets, pushes `main`, and updates `gh-pages` with the committed `docs/` tree. GitHub's Pages workflow then builds and deploys the site. It does not force-push or change the current working branch.
 
 ```bash
 python3 tests/check_site.py
