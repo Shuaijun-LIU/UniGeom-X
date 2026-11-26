@@ -34,3 +34,14 @@ imprint, not a calibrated gel mechanics model. The images are neither paper
 figures nor sensor-camera measurements, and are not fed back into the controller.
 The controller reads ideal MuJoCo contact forces. No external reference image or
 video is redistributed as our experimental output.
+
+## Material and table revision
+
+The tabletop area is now exactly twice the first compact table: both horizontal
+extents are multiplied by sqrt(2). The rubber mat is 1.06 × 0.74 m. Legs and apron
+are repositioned to support the larger top. `materials.js` generates independent
+color, micro-height and roughness maps for rubber, laminate, coated metal, brushed
+metal and flooring. A local studio environment supplies broad reflections, while
+rounded visual edges, foot pads and tray fasteners add construction details.
+These details are original procedural geometry and materials; no image assets are
+required. Visual bevels preserve the collision boxes' outer dimensions.

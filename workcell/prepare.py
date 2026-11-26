@@ -1,5 +1,5 @@
 """Package the licensed CarryQ Panda assets; run with the source web directory."""
-import sys,json,gzip,base64,xml.etree.ElementTree as ET
+import sys,json,gzip,base64,math,xml.etree.ElementTree as ET
 from pathlib import Path
 source=Path(sys.argv[1]); out=Path(__file__).resolve().parents[1]/'docs/assets/workcell/data'
 r=ET.fromstring((source/'public/franka/panda.xml').read_text())
@@ -19,13 +19,13 @@ for side in ['left','right']:
 act=r.find('actuator');act.remove(act[-1]);ET.SubElement(act,'general',name='gripper_force',tendon='split',gainprm='1',biastype='none',ctrlrange='-24 12',forcerange='-24 12')
 world=r.find('worldbody')
 # A compact rubber mat sits on a real, four-legged workbench.
-ET.SubElement(world,'geom',name='bench',type='box',pos='.30 .04 -.006',size='.45 .31 .006',rgba='.22 .38 .37 1',friction='.7 .01 .001')
-ET.SubElement(world,'geom',name='tabletop',type='box',pos='.30 .04 -.033',size='.49 .35 .021',rgba='.72 .69 .59 1')
-for x in [-.13,.73]:
- for y in [-.25,.33]:
+ET.SubElement(world,'geom',name='bench',type='box',pos='.30 .04 -.006',size='.53 .37 .006',rgba='.22 .38 .37 1',friction='.7 .01 .001')
+ET.SubElement(world,'geom',name='tabletop',type='box',pos='.30 .04 -.033',size=f'{.49*math.sqrt(2):.12f} {.35*math.sqrt(2):.12f} .021',rgba='.72 .69 .59 1')
+for x in [-.33,.93]:
+ for y in [-.39,.47]:
   ET.SubElement(world,'geom',name=f'leg_{x}_{y}',type='box',pos=f'{x} {y} -.324',size='.022 .022 .270',rgba='.16 .23 .25 1')
-for y in [-.25,.33]:
- ET.SubElement(world,'geom',name=f'apron_{y}',type='box',pos=f'.30 {y} -.080',size='.43 .014 .026',rgba='.16 .23 .25 1')
+for y in [-.39,.47]:
+ ET.SubElement(world,'geom',name=f'apron_{y}',type='box',pos=f'.30 {y} -.080',size='.63 .014 .026',rgba='.16 .23 .25 1')
 ET.SubElement(world,'geom',name='floor',type='plane',pos='0 0 -.60',size='3 3 .02',rgba='.26 .31 .34 1')
 # The object must clear this divider before it can enter the receiving pocket.
 ET.SubElement(world,'geom',name='divider',type='box',pos='.46 .125 .055',size='.095 .013 .055',rgba='.65 .40 .27 1')
