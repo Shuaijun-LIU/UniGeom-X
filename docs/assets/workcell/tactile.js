@@ -10,9 +10,11 @@ export function drawTactile(canvas,frame,side){
  for(const [x,z,f] of points){cx+=x*f;cy+=z*f;weight+=f;}
  if(weight){cx/=weight;cy/=weight;}
  cx=clamp(cx/.032,-.24,.24);cy=clamp(-cy/.046,-.25,.25);
+ const soft=Boolean(frame.soft),softPoints=points.map(([x,z,f])=>[clamp(x/.056,-.4,.4),clamp(-z/.064,-.4,.4),f/Math.max(weight,.001)]);
  const contact=1-Math.exp(-n/1.3),sx=clamp(shear[0]/2,-1,1),sy=clamp(-shear[1]/2,-1,1);
  // A compliant, flat object leaves a broad imprint with a smooth rim.
  const height=(x,y)=>{
+  if(soft){let field=0;for(const [px,py,load] of softPoints)field+=load*Math.exp(-(((x-px)/.22)**2+((y-py)/.24)**2)*1.7);return contact*.12*field;}
   const dx=(x-cx)/.34,dy=(y-cy)/.36;
   const d=Math.pow(Math.abs(dx),8)+Math.pow(Math.abs(dy),8);
   return contact*.045/(1+Math.exp(clamp((d-1)*5,-40,40)));

@@ -45,3 +45,41 @@ for mesh in r.find('asset').findall('mesh'):
 out.mkdir(parents=True,exist_ok=True)
 (out/'physics.json.gz').write_bytes(gzip.compress(json.dumps(files,separators=(',',':')).encode(),mtime=0))
 print('Packaged',len(files),'files;', (out/'physics.json.gz').stat().st_size,'bytes')
+
+# A second, independent task; retain the rigid scene and its recordings verbatim.
+import copy
+soft=copy.deepcopy(r)
+soft.set('model','UniGeom-X soft sponge')
+soft.find('option').set('timestep','0.001')
+soft.find('option').set('jacobian','dense')
+soft.find('option').set('cone','elliptic')
+soft.find('option').set('noslip_iterations','4')
+soft.find('option').set('impratio','10')
+sw=soft.find('worldbody')
+# Only the tactile pads interact with the sponge in this controlled task.
+for body in sw.iter('body'):
+ for geom in body.findall('geom'):
+  if geom.get('name') not in ['left_pad','right_pad']:
+   geom.set('contype','0');geom.set('conaffinity','0')
+  else:geom.set('size','.025 .005 .028')
+sw.remove(next(b for b in sw.findall('body') if b.get('name')=='object'))
+for g in sw.findall('geom'):
+ name=g.get('name','')
+ if name=='tray_base':g.set('size','.080 .070 .002')
+ if name.startswith('tray_side_'):
+  sign=int(name.rsplit('_',1)[-1]);g.set('pos',f'{.46+sign*.074} .25 .009');g.set('size','.006 .064 .005')
+ if name.startswith('tray_end_'):
+  sign=int(name.rsplit('_',1)[-1]);g.set('pos',f'.46 {.25+sign*.064} .009');g.set('size','.080 .006 .005')
+# Reduced elastic sponge: eight compliant contact nodes around a free carrier.
+# No attachment or constraint connects the object to the robot.
+carrier=ET.SubElement(sw,'body',name='sponge',pos='.46 0 .032')
+ET.SubElement(carrier,'freejoint',name='sponge_free')
+ET.SubElement(carrier,'inertial',pos='0 0 0',mass='.020',diaginertia='.000010 .000010 .000010')
+for i,(x,y,z) in enumerate(( (x,y,z) for x in [-1,1] for y in [-1,1] for z in [-1,1] )):
+ node=ET.SubElement(carrier,'body',name=f'sponge_node_{i}',pos=f'{x*.017} {y*.015} {z*.023}')
+ for axis,direction in enumerate(['1 0 0','0 1 0','0 0 1']):
+  ET.SubElement(node,'joint',name=f'sponge_spring_{i}_{axis}',type='slide',axis=direction,stiffness='80' if axis==1 else '200',damping='.15',limited='true',range='-.014 .014')
+ ET.SubElement(node,'geom',name=f'sponge_contact_{i}',type='sphere',size='.008',mass='.001',contype='2',conaffinity='1',friction='1.0 .01 .001',condim='4',solref='.008 1',rgba='.88 .67 .26 1',group='3')
+soft_files={'soft-scene.xml':base64.b64encode(ET.tostring(soft,encoding='unicode').encode()).decode()}
+(out/'soft-physics.json.gz').write_bytes(gzip.compress(json.dumps(soft_files,separators=(',',':')).encode(),mtime=0))
+print('Packaged soft-scene XML; robot meshes are shared with the rigid task.')

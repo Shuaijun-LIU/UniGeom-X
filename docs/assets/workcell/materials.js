@@ -10,7 +10,12 @@ export function createMaterials(renderer){
   const albedo=new Uint8Array(size*size*4),height=new Uint8Array(albedo.length),rough=new Uint8Array(albedo.length);
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
    const n=hash(x,y),broad=hash(Math.floor(x/8),Math.floor(y/8));let h=.5,shade=0,r=.8;
-   if(kind==='rubber'){const px=(x%8)/8-.5,py=(y%8)/8-.5;h=.55-.32*Math.exp(-(px*px+py*py)*23)+(n-.5)*.1;shade=(h-.5)*.08;r=.87+n*.1;}
+   if(kind==='foam'){
+    let pore=0;const cell=12,cx=Math.floor(x/cell),cy=Math.floor(y/cell);
+    for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const gx=cx+i,gy=cy+j,px=(gx+.15+.7*hash(gx,gy))*cell,py=(gy+.15+.7*hash(gx+81,gy+17))*cell,radius=1.5+hash(gx+25,gy+39)*3.5,dx=(x-px)/radius,dy=(y-py)/(radius*(.65+hash(gx+3,gy+8)*.5));pore=Math.max(pore,Math.exp(-(dx*dx+dy*dy)*1.8));}
+    h=.78-pore*.65+(n-.5)*.18;shade=-pore*.38+(n-.5)*.16;r=.9+n*.1;
+   }
+   else if(kind==='rubber'){const px=(x%8)/8-.5,py=(y%8)/8-.5;h=.55-.32*Math.exp(-(px*px+py*py)*23)+(n-.5)*.1;shade=(h-.5)*.08;r=.87+n*.1;}
    else if(kind==='laminate'){h=.5+(n-.5)*.3;shade=(n-.5)*.045+(broad-.5)*.013;r=.55+n*.15;}
    else if(kind==='metal'){const line=hash(0,y);h=.5+(line-.5)*.35+(n-.5)*.12;shade=(line-.5)*.06;r=.33+line*.2;}
    else if(kind==='polymer'){h=.5+(n-.5)*.3;shade=(n-.5)*.035;r=.58+n*.2;}
@@ -21,6 +26,7 @@ export function createMaterials(renderer){
   return {map:make(albedo,true),bumpMap:make(height),roughnessMap:make(rough),roughness:1};
  }
  const styles={
+  foam:{...maps('#d9b456','foam',[1,1]),bumpScale:.00025,metalness:0},
   rubber:{...maps('#426c62','rubber',[5,4]),bumpScale:.0004,metalness:0},
   laminate:{...maps('#c8c0ad','laminate',[3,2]),bumpScale:.00018,metalness:0},
   frame:{...maps('#334947','polymer',[2,5]),bumpScale:.00015,metalness:.3},
