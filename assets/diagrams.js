@@ -77,19 +77,19 @@ export function drawInterface(svg,state){
  if(!mobile){
   const rows=[['Vision',C.purple],['Depth',C.teal],['Touch',C.sand]];
   s+=text(20,24,'Independent encoders','arch-small');
-  rows.forEach(([l,c],i)=>{const y=53+i*126,on=i<2||touch;s+=`<g opacity="${on?1:.23}">`+miniFrame(20,y+9,['rgb','depth','touch'][i],c,58,40)+route(`M80 ${y+29}H102`,c,on)+module(104,y,143,60,l,'Frozen',c,true)+route(`M245 ${y+30}H285`,c,on)+grid(290,y+12,45,32,c)+route(`M347 ${y+30}H350Q361 ${y+30} 361 172V181`,c,on)+'</g>';});
+  rows.forEach(([l,c],i)=>{const y=53+i*126,on=i<2||touch;s+=`<g opacity="${on?1:.23}">`+miniFrame(20,y+9,['rgb','depth','touch'][i],c,58,40)+route(`M80 ${y+29}H102`,c,on)+module(104,y,143,60,l,'Frozen',c,true)+route(`M245 ${y+30}H285`,c,on)+grid(290,y+12,45,32,c)+`<path d="M347 ${y+30}H359V104" fill="none" stroke="${c}" stroke-width="1.4"/>`+'</g>';});
   s+=module(379,69,166,70,'Interface','Trainable',C.purple)+route('M545 104H597',C.purple)+module(600,69,134,70,'State','With history',C.teal)+route('M734 104H768',C.teal)+module(771,69,110,70,'Policy','ACT / DP',C.teal);
   // Encoder feature branches enter the learned interface from below.
-  s+=route('M361 181V149H457V140',C.purple);
+  s+=route('M359 104H382',C.purple);
   s+=`<path d="M391 139H534L865 197H368Z" fill="url(#x-zoom)"/>`;
   s+=inset(369,197,512,311,'Inside the geometry interface');
-  s+=text(402,260,change?'Compare changes':'Relate visible structure','arch-small');
+  s+=text(402,260,change?'Align transition relations':'Align shared relations','arch-small');
   s+=points(438,302,C.purple,0,change)+points(535,302,C.teal,1,change)+(touch?points(626,302,C.sand,1,change):text(626,309,'Offline','arch-small','middle'));
   s+=line(470,301,499,301,C.purple,'3 4')+(touch?line(568,301,592,301,C.sand,'3 4'):'');
   s+=route('M662 301H704',C.purple)+grid(718,281,81,49,C.purple,5)+text(762,358,'Shared relations','arch-small','middle');
-  s+=text(401,405,'Preserve original features','arch-small')+grid(407,426,48,28,C.purple)+grid(475,426,48,28,C.teal)+(touch?grid(543,426,48,28,C.sand):'');
-  s+=route('M608 442H682Q694 442 694 410V392H751',C.teal)+junction(762,392)+route('M762 369V382',C.purple)+route('M772 392H841',C.teal);
-  s+=text(759,477,'To state update','arch-small','middle');
+  s+=text(401,405,'Retain sensory evidence','arch-small')+grid(407,426,48,28,C.purple)+grid(475,426,48,28,C.teal)+(touch?grid(543,426,48,28,C.sand):'');
+  s+=route('M608 442H682Q694 442 694 410V393H737',C.teal)+rect(738,377,70,32,C.teal,'#20302f',4)+text(773,399,'Fuse','arch-small','middle')+route('M762 369V376',C.purple)+route('M808 393H851',C.teal);
+  s+=text(773,465,'State input','arch-small','middle');
   s+=route('M704 69V44H641V68',C.teal,false)+text(671,31,'History','arch-small','middle');
   s+=text(25,449,'Different observations.','arch-label')+text(25,477,'A continuing task state.','arch-label');
  }else{
@@ -97,9 +97,9 @@ export function drawInterface(svg,state){
   s+=inset(10,194,460,318,'Partial geometry interface');
   s+=points(100,281,C.purple,0,change)+points(240,281,C.teal,1,change)+(touch?points(380,281,C.sand,1,change):text(380,287,'Offline','arch-small','middle'));
   s+=text(240,337,change?'Relate changes in the same interaction':'Relate jointly observable structure','arch-small','middle');
-  s+=route('M240 349V384',C.purple)+grid(203,387,62,39,C.purple)+text(240,460,'Shared + original features','arch-label','middle');
-  s+=route('M45 141H2V479H185',C.purple)+ (touch?route('M435 141H478V479H295',C.sand):'');
-  s+=route('M240 478V550',C.teal)+module(84,550,312,66,'Persistent state','Update with history',C.teal)+route('M240 616V651',C.teal)+module(84,651,312,60,'ACT / Diffusion Policy','',C.teal);
+  s+=route('M240 349V384',C.purple)+grid(203,387,62,39,C.purple)+route('M240 427V442',C.purple)+rect(151,443,178,54,C.teal,'#20302f',5)+text(240,476,'Fuse evidence','arch-label','middle');
+  s+=route('M45 141H2V470H150',C.purple)+ (touch?route('M435 141H478V470H330',C.sand):'');
+  s+=route('M240 498V550',C.teal)+module(84,550,312,66,'Persistent state','Update with history',C.teal)+route('M240 616V651',C.teal)+module(84,651,312,60,'ACT / Diffusion Policy','',C.teal);
  }
  svg.innerHTML=s;
 }
@@ -107,9 +107,10 @@ export function drawInterface(svg,state){
 function futureStrip(state,mobile){
  const good=state.candidate==='correct',y=mobile?490:340,w=mobile?460:860,x=mobile?10:20;
  let s=inset(x,y,w,mobile?274:174,'One action, consistent sensory consequences');
- const columns=mobile?[[40,y+70],[190,y+70],[340,y+70]]:[[52,y+61],[344,y+61],[635,y+61]];
+ const columns=mobile?[[40,y+70],[190,y+70],[340,y+70]]:[[114,y+61],[401,y+61],[687,y+61]];
+ if(!mobile)s+=line(40,y+42,860,y+42,C.line)+line(306,y+56,306,y+151,C.line)+line(593,y+56,593,y+151,C.line);
  columns.forEach(([xx,yy],i)=>{
-  const names=['Vision / depth','Touch','Force'];s+=text(xx,yy,names[i],'arch-label');
+  const names=['Vision / depth','Touch','Force'];s+=text(xx+45,yy,names[i],'arch-label','middle');
   if(i===0){
    const cx=xx+40,cy=yy+45;
    s+=`<path d="M${xx+4} ${cy+22}h85" stroke="#81768f" stroke-width="2"/><g transform="rotate(${good?0:18} ${cx} ${cy})"><path d="M${cx-10} ${cy-20}h25v33h-25Z" fill="${C.purple}33" stroke="${C.purple}"/><path d="M${cx-10} ${cy-20}l9 -6h25l-9 6" fill="none" stroke="${C.purple}"/></g>`;
@@ -119,7 +120,7 @@ function futureStrip(state,mobile){
    const points=good?[20,9,0,9,15,18,20]:[20,20,16,10,0,-12,-17];s+=`<path d="M${points.map((v,k)=>`${xx+k*15} ${yy+37+v}`).join('L')}" fill="none" stroke="${good?C.teal:C.sand}" stroke-width="2"/>`;
   }
   const captions=good?['Aligned pose','Balanced contact','Less resistance']:['Pose error','One-sided contact','Rising resistance'];
-  s+=text(xx,yy+96,captions[i],'arch-small');
+  s+=text(xx+45,yy+96,captions[i],'arch-small','middle');
  });
  if(mobile)s+=text(240,y+234,good?'Correct the pose, then continue.':'Advancing can increase resistance.','arch-small','middle');
  return s;
@@ -133,14 +134,14 @@ export function drawModel(svg,state){
   [['RGB','rgb',C.purple],['Depth','depth',C.teal],['Touch','touch',C.sand],['Force','force',C.sand]].forEach(([l,k,c],i)=>{
    const xx=20+(i%2)*99, yy=47+Math.floor(i/2)*109;s+=miniFrame(xx,yy,k,c,76,46)+text(xx+38,yy+70,l,'arch-small','middle');
   });
-  s+=route('M96 70V132H225V173H269',C.purple)+route('M195 70H225V173',C.teal)+route('M96 179V242H225V173',C.sand)+route('M195 179H225V173',C.sand);
+  s+=`<path d="M204 48h13v188h-13" stroke="${C.line}" fill="none" stroke-width="1.4"/>`+route('M217 173H269',C.purple);
   s+=text(446,24,'Language · robot state · task history','arch-small','middle')+route('M446 34V59',C.teal);
   s+=`<path d="M282 59h303l-15 233H269Z" fill="#211e2b" stroke="${C.sand}" stroke-width="1.5"/>`;
   s+=text(427,93,'Pretrained WAM','arch-label','middle');
   s+=grid(302,123,52,37,C.purple)+grid(379,123,52,37,C.teal)+grid(456,123,52,37,C.sand);
-  s+=text(428,186,'Multimodal interaction','arch-small','middle');
+  s+=route('M335 161V203',C.purple)+route('M412 161V203',C.teal)+route('M489 161V203',C.sand);
   s+=module(294,204,244,55,'Geometry interaction','',C.purple);
-  s+=route('M585 125H649',C.sand)+module(652,95,226,66,'Future observations','RGB-D · touch · force',C.sand);
+  s+=`<path d="M538 232h20V125h26M558 232v12h20" fill="none" stroke="${C.line}" stroke-width="1.4"/>`+route('M585 125H649',C.sand)+module(652,95,226,66,'Future observations','RGB-D · touch · force',C.sand);
   s+=route(joint?'M578 244H649':'M649 244H578',C.teal)+module(652,211,226,66,joint?'Generated actions':'Candidate actions',state.candidate==='correct'?'Correct the pose':'Keep advancing',C.teal);
   s+=route('M766 161V183H892V322H839V339',C.sand,false);
   s+=text(424,318,'Learn world–action consistency','arch-small','middle');
