@@ -17,3 +17,5 @@
 @media(max-width:950px){.slide{align-items:stretch}.roadmap-slide{justify-content:flex-start}.visual{flex-shrink:0}}
 .roadmap-slide{align-items:stretch}
 @media(min-width:951px) and (max-height:780px){#slide-handover .step-list button{padding-top:6px;padding-bottom:6px}}
+@media(max-width:500px){.mechanism-visual .svg-small,.model-visual .svg-small{font-size:16px}.mechanism-visual .svg-label,.model-visual .svg-label{font-size:19px}.interaction-visual .svg-small{font-size:17px}.interaction-visual .svg-label{font-size:21px}}
+@media(min-width:951px) and (max-height:780px){.roadmap-heading{margin-bottom:14px}.shared-foundation{padding-top:10px;padding-bottom:10px}.research-path{margin-top:12px}.roadmap-note{margin-top:10px}}

@@ -28,10 +28,18 @@ Open `http://localhost:8000`. Use chapter tabs, arrow keys, Page Up / Page Down,
 
 ## Publication
 
-Static files live in `docs/`. The GitHub Actions workflow validates assets and deploys that directory to GitHub Pages on each push to `main`. The repository's Pages source must allow GitHub Actions. The expected project URL is `https://shuaijun-liu.github.io/UniGeom-X/`.
+Static files live in `docs/`. The GitHub Actions workflow validates assets and deploys that directory to GitHub Pages on each push to `main`. The live presentation is at **[shuaijun-liu.github.io/UniGeom-X](https://shuaijun-liu.github.io/UniGeom-X/)**. The `gh-pages` branch was used to initialize the new Pages site; ongoing changes belong on `main` and are published by the workflow.
 
 ```bash
 python3 tests/check_site.py
 ```
+
+Browser checks, with Playwright and Chromium installed:
+
+```bash
+node tests/browser.cjs http://localhost:8000/
+```
+
+The browser check covers navigation and history, interactive controls, measured-data loading, animation pause, reduced motion, and desktop/mobile layouts. `CHROMIUM_PATH` can optionally select an existing Chromium executable.
 
 See [CREDITS.md](CREDITS.md) for asset provenance and the distinction between measured data and schematic animation.
