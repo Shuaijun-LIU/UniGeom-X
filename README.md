@@ -4,7 +4,7 @@ A five-page interactive introduction to **UniGeom-X: Shared Geometry for Cross-M
 
 **Shuaijun × Feiyang**
 
-The presentation continues the visual language of the [original UniGeom website](https://nebulis-lab.com/UniGeom/). UniGeom-X and UniGeom-M are research plans: their diagrams illustrate proposed mechanisms, not trained-model outputs or experimental results.
+The presentation is primarily in English, with two short Chinese explanations for the core X and M ideas. It continues the visual language of the [original UniGeom website](https://nebulis-lab.com/UniGeom/). UniGeom-X and UniGeom-M are research plans: their diagrams illustrate proposed mechanisms, not trained-model outputs or experimental results.
 
 ## Five pages
 
