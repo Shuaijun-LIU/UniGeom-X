@@ -47,15 +47,31 @@ export function createWorkcell(container,description,surfaces){
  for(const x of [.405,.515])for(const y of [.202,.298]){cylinder(.0028,.0008,steel,x,y,.0043);const slit=new THREE.Mesh(new THREE.BoxGeometry(.003,.0005,.0001),darkRubber);slit.position.set(x,y,.00475);scene.add(slit);}
  const edge=new THREE.Mesh(roundedBox(.49*Math.SQRT2,.35*Math.SQRT2,.002,.001),new THREE.MeshStandardMaterial({color:'#666957',roughness:.53}));edge.position.set(.30,.04,-.053);edge.receiveShadow=true;scene.add(edge);
  // A non-colliding printed stripe makes object motion easy to follow.
- const object=bodies[description.ids.object];const stripe=new THREE.Mesh(new THREE.BoxGeometry(.0503,.0443,.004),new THREE.MeshStandardMaterial({color:'#eee2cc',roughness:.7}));stripe.position.z=.013;object.add(stripe);
+ if(description.ids.object!==undefined){const object=bodies[description.ids.object];const stripe=new THREE.Mesh(new THREE.BoxGeometry(.0503,.0443,.004),new THREE.MeshStandardMaterial({color:'#eee2cc',roughness:.7}));stripe.position.z=.013;object.add(stripe);}
+ let flexGeometry=null,flexVertexMap=null;
+ if(description.flex){
+  const rest=description.flex.rest;flexGeometry=new THREE.BufferGeometry();flexVertexMap=description.flex.triangles;
+  const positions=[],uv=[];
+  // Separate UVs per physical triangle avoid cylindrical seams across the foam faces.
+  for(let k=0;k<flexVertexMap.length;k+=3){
+   const ids=flexVertexMap.slice(k,k+3),v=ids.map(i=>new THREE.Vector3().fromArray(rest,i*3));
+   const n=v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0]));
+   const axis=[Math.abs(n.x),Math.abs(n.y),Math.abs(n.z)].indexOf(Math.max(Math.abs(n.x),Math.abs(n.y),Math.abs(n.z))),axes=[0,1,2].filter(i=>i!==axis);
+   for(const id of ids){positions.push(...rest.slice(id*3,id*3+3));uv.push(rest[id*3+axes[0]]/.05,rest[id*3+axes[1]]/.05);}
+  }
+  flexGeometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  flexGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));flexGeometry.computeVertexNormals();
+  const material=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.95,side:THREE.DoubleSide});materials.apply(material,'foam');const sponge=new THREE.Mesh(flexGeometry,material);sponge.castShadow=true;sponge.receiveShadow=true;sponge.frustumCulled=false;scene.add(sponge);
+ }
  const lamp=new THREE.DirectionalLight('#fff3e1',2.6);lamp.position.set(-.1,-.8,2.1);lamp.castShadow=true;lamp.shadow.mapSize.set(2048,2048);Object.assign(lamp.shadow.camera,{left:-1.3,right:1.3,top:1.3,bottom:-1.3,near:.1,far:4});lamp.shadow.bias=-.00007;lamp.shadow.normalBias=.0006;lamp.shadow.radius=2;scene.add(lamp);
  const fill=new THREE.DirectionalLight('#c0e5eb',1.2);fill.position.set(-1,1,1);scene.add(fill);scene.add(new THREE.HemisphereLight('#e7f2f1','#3b4540',1.1));
+ const softCenter=new THREE.Vector3();if(description.flex){const p=description.flex.rest;for(let i=0;i<p.length;i+=3)softCenter.add(new THREE.Vector3(p[i],p[i+1],p[i+2]));softCenter.multiplyScalar(3/p.length);}
  let view='overview',disposed=false;const qa=new THREE.Quaternion(),qb=new THREE.Quaternion();
  function render(){if(!disposed)renderer.render(scene,camera);}
- function setView(v){view=v;if(v==='contact'){camera.position.set(1.02,.52,.54);controls.target.set(.46,.12,.13);}else{camera.position.set(1.68,-2.10,1.20);controls.target.set(.29,.03,-.015);}camera.updateProjectionMatrix();controls.update();render();}
+ function setView(v){view=v;if(v==='contact'){if(description.flex){camera.position.copy(softCenter).add(new THREE.Vector3(.27,.25,.20));controls.target.copy(softCenter).add(new THREE.Vector3(0,0,.035));}else{camera.position.set(1.02,.52,.54);controls.target.set(.46,.12,.13);}}else{camera.position.set(1.68,-2.10,1.20);controls.target.set(.29,.03,-.015);}camera.updateProjectionMatrix();controls.update();render();}
  function resize(){const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();render();}
  const ro=new ResizeObserver(resize);ro.observe(container);controls.addEventListener('change',render);
- function pose(a,b=a,f=0){for(let i=0;i<bodies.length;i++){const k=i*7;bodies[i].position.set(a[k]+(b[k]-a[k])*f,a[k+1]+(b[k+1]-a[k+1])*f,a[k+2]+(b[k+2]-a[k+2])*f);qa.fromArray(a,k+3);qb.fromArray(b,k+3);bodies[i].quaternion.copy(qa).slerp(qb,f);}render();}
+ function pose(a,b=a,f=0,softA=null,softB=softA){for(let i=0;i<bodies.length;i++){const k=i*7;bodies[i].position.set(a[k]+(b[k]-a[k])*f,a[k+1]+(b[k+1]-a[k+1])*f,a[k+2]+(b[k+2]-a[k+2])*f);qa.fromArray(a,k+3);qb.fromArray(b,k+3);bodies[i].quaternion.copy(qa).slerp(qb,f);}if(flexGeometry&&softA){const nextCenter=new THREE.Vector3();for(let i=0;i<softA.length;i+=3)for(let j=0;j<3;j++)nextCenter.setComponent(j,nextCenter.getComponent(j)+(softA[i+j]+((softB||softA)[i+j]-softA[i+j])*f)*3/softA.length);if(view==='contact'){const delta=nextCenter.clone().sub(softCenter);camera.position.add(delta);controls.target.add(delta);controls.update();}softCenter.copy(nextCenter);const p=flexGeometry.attributes.position.array;for(let i=0;i<flexVertexMap.length;i++)for(let j=0;j<3;j++){const k=flexVertexMap[i]*3+j;p[i*3+j]=softA[k]+((softB||softA)[k]-softA[k])*f;}flexGeometry.attributes.position.needsUpdate=true;flexGeometry.computeVertexNormals();}render();}
  setView('overview');resize();
  return {pose,setView,render,get view(){return view;},dispose(){disposed=true;ro.disconnect();controls.dispose();const gs=new Set(),ms=new Set();scene.traverse(o=>{if(o.isMesh){gs.add(o.geometry);ms.add(o.material);}});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());materials.dispose();environment.dispose();renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();}};
 }
