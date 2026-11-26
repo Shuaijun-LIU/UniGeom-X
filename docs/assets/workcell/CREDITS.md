@@ -13,3 +13,24 @@ Both recordings come from complete 16-second MuJoCo executions using the same sc
 Saved physics states and contact readouts are sampled every 20 ms; physics advances every 2 ms. The browser interpolates body poses between samples. It holds contact observations at their recorded samples and preserves each run's final success or failure. Physics stepping and the same controller run locally in Live physics. Camera movement does not change the controller's known target.
 
 The object is rigid, freely moving and held by friction; no weld attaches it to the gripper. The stripe, goal marking and contact-map smoothing are visual aids. No deformation, damage model, learned vision inference or optical tactile renderer is claimed.
+
+## Contact workcell v2
+
+The new rubber mat, laminate tabletop, metal legs and concrete floor use locally
+created procedural materials. The original CarryQ wood/denim maps are no longer
+loaded by this scene.
+
+The optical tactile illustration follows the physical imaging principle described
+by [Yuan, Dong and Adelson, GelSight (2017)](https://pmc.ncbi.nlm.nih.gov/articles/PMC5751610/):
+colored directional illumination reveals gel surface slope, and markers reveal
+lateral deformation. Visual reference: the real sensor panels in the official
+[ManiSkill-ViTac 2025 peg-insertion comparison](https://ai-workshops.github.io/maniskill-vitac-challenge-2025/img/peg-insertion-sim2real.gif).
+[ManiFeel](https://zhengtongxu.github.io/manifeel-website/) provides additional
+TacRGB / force-field task references.
+
+`tactile.js` is an original, analytic approximation driven by contact normal load,
+contact centroid and signed pad-local shear. It assumes a compliant rectangular
+imprint, not a calibrated gel mechanics model. The images are neither paper
+figures nor sensor-camera measurements, and are not fed back into the controller.
+The controller reads ideal MuJoCo contact forces. No external reference image or
+video is redistributed as our experimental output.

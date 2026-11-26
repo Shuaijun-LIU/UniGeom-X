@@ -13,13 +13,13 @@ const assert=require('node:assert/strict');const {chromium}=require('playwright'
  await page.locator('#next').click();const paused=await page.locator('#grasp-workcell').getAttribute('data-time');
  await page.waitForTimeout(350);assert.equal(await page.locator('#grasp-workcell').getAttribute('data-time'),paused,'Hidden live simulation advanced');
  await page.locator('#previous').click();assert.equal(await page.locator('.wc-play').innerText(),'Play');
- await page.locator('.wc-play').click();await waitTime(16);
- assert.equal(await page.locator('.wc-phase').innerText(),'Placed on target');
+ await page.locator('.wc-play').click();await waitTime(20);
+ assert.equal(await page.locator('.wc-phase').innerText(),'Seated in pocket');
  await page.locator('.wc-reset').click();await ready();assert.equal(+await page.locator('#grasp-workcell').getAttribute('data-time'),0);
- await page.locator('#wc-controller').selectOption('fixed-grip');await ready();await page.locator('.wc-play').click();await waitTime(16);
- assert.equal(await page.locator('.wc-phase').innerText(),'Object dropped');
- await page.locator('[data-wc-mode=recorded]').click();await ready();await page.locator('#wc-time').fill('16');await page.locator('#wc-time').dispatchEvent('input');
- assert.equal(await page.locator('.wc-phase').innerText(),'Object dropped');
+ await page.locator('#wc-controller').selectOption('fixed-grip');await ready();await page.locator('.wc-play').click();await waitTime(20);
+ assert.equal(await page.locator('.wc-phase').innerText(),'Placement failed');
+ await page.locator('[data-wc-mode=recorded]').click();await ready();await page.locator('#wc-time').fill('20');await page.locator('#wc-time').dispatchEvent('input');
+ assert.equal(await page.locator('.wc-phase').innerText(),'Placement failed');
  assert.deepEqual(errors,[]);console.log('PASS: live success/failure, pause on exit, reset and recorded/live transitions.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

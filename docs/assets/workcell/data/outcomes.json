@@ -3,8 +3,8 @@
     "id": "contact-feedback",
     "success": true,
     "recovered": true,
-    "peakSlip_mm": 5.758093717528577,
-    "maxNormal_N": 6.7108994255184555,
+    "peakSlip_mm": 8.062974663229742,
+    "maxNormal_N": 5.7318567151102515,
     "events": [
       {
         "time": 5.503999999999616,
@@ -22,8 +22,8 @@
     "id": "fixed-grip",
     "success": false,
     "recovered": false,
-    "peakSlip_mm": 180.1889999310313,
-    "maxNormal_N": 4.457133537040587,
+    "peakSlip_mm": 261.2730404814193,
+    "maxNormal_N": 4.457133537040723,
     "events": [
       {
         "time": 5.503999999999616,

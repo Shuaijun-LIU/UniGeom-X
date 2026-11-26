@@ -6,3 +6,7 @@
 @media(min-width:651px){.wc-evidence{gap:7px}.wc-pad{height:75px}.wc-chart{height:48px;min-height:40px}.wc-source{font-size:12px;line-height:1.4}}
 
 .wc-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+
+/* Taller sensor windows preserve the gel image proportions. */
+@media(min-width:651px){.wc-body{min-height:360px;height:clamp(360px,44dvh,470px)}.wc-pad{height:110px}.wc-evidence{gap:8px}.wc-chart{height:45px}.wc-source{font-size:12px}.wc-pads>div{max-width:100px}}
+.wc-pad{object-fit:fill;border-color:#526d70;border-radius:10px;background:#658280}.wc-stage{background:#34434b}
