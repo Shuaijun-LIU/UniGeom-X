@@ -3,7 +3,7 @@ import {drawInteraction,drawInterface,drawModel,drawGlyphs} from './diagrams.js'
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const keys=['unigeom','handover','interface','model','roadmap'];
-const titles=['从 UniGeom 出发','X · 感知交接','X · 如何连接','M · 统一学习','研究路线'];
+const titles=['UniGeom','X · Handover','X · Interface','M · World & Action','Research path'];
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={page:0,phase:0,occluded:false,touch:true,relation:'state',mode:'joint',candidate:'correct'};
 const paused=[reduced.matches,reduced.matches,reduced.matches,reduced.matches,true];
@@ -17,7 +17,7 @@ function draw(){
   if(state.page===3)drawModel(scenes[2],state);
 }
 function motionUI(){
-  $$('.motion-toggle').forEach((b,i)=>{b.textContent=paused[i]?'播放动画':'暂停动画';b.setAttribute('aria-label',b.textContent);b.setAttribute('aria-pressed',String(paused[i]));});
+  $$('.motion-toggle').forEach((b,i)=>{b.textContent=paused[i]?'Play animation':'Pause animation';b.setAttribute('aria-label',b.textContent);b.setAttribute('aria-pressed',String(paused[i]));});
   $$('.slide').forEach((s,i)=>s.classList.toggle('motion-paused',paused[i]));
 }
 function go(index,updateHash=true){
@@ -50,19 +50,19 @@ $('#deck').addEventListener('touchend',e=>{if(!swipe)return;const dx=e.changedTo
 $$('.motion-toggle').forEach((b,i)=>b.onclick=()=>{paused[i]=!paused[i];motionUI();draw();});
 reduced.addEventListener('change',e=>{if(e.matches){paused.fill(true);phaseShown=state.phase;}if(hero)hero.reduced=e.matches;motionUI();draw();});
 function phaseCaption(){
-  $('#phase-label').textContent=['接近目标','建立接触','修正并插入'][state.phase];
-  $('#state-caption').textContent=state.phase===0?(state.occluded?'接触区看不清时，已有目标信息仍保留；局部位置需依靠可用观测。':'目标孔位与任务目标，由视觉阶段建立。'):state.phase===1?(state.occluded?'局部视觉受阻，触觉补充接触偏差，继续保留此前目标信息。':'触觉加入接触证据，已有目标与任务状态继续保留。'):'触觉反馈用于修正局部偏差；视觉和历史信息继续支持目标判断。';
+  $('#phase-label').textContent=['Approach','Contact','Correct and insert'][state.phase];
+  $('#state-caption').textContent=state.phase===0?(state.occluded?'The target stays in memory; local pose must be updated from available evidence.':'Vision establishes the target; its identity stays in memory.'):state.phase===1?(state.occluded?'Touch supplies contact evidence when the view is blocked; the target is retained.':'Contact evidence updates the state without resetting the task.'):'Touch guides local corrections; vision and memory retain the global goal.';
 }
 $$('[data-phase]').forEach(b=>b.onclick=()=>{state.phase=Number(b.dataset.phase);pressed('#phase-controls','phase',state.phase);if(paused[1]||reduced.matches)phaseShown=state.phase;phaseCaption();draw();});
 $('#occlusion').onchange=e=>{state.occluded=e.target.checked;phaseCaption();draw();};
 function interfaceCaption(){
-  $('#interface-caption').textContent=!state.touch?'当前只有视觉与深度参与。接入触觉后，接口还需要承接新增的接触证据。':state.relation==='state'?'局部形状和相对位置可以联系；触觉的局部压力信息仍沿独立旁路保留。':'物体发生小幅移动时，对照两种模态的变化关系；不要求它们的全部特征相同。';
+  $('#interface-caption').textContent=!state.touch?'Vision and depth remain connected. Adding touch introduces new contact evidence.':state.relation==='state'?'Relate local shape and pose while retaining the original contact evidence.':'Relate changes caused by the same interaction, without equating all features.';
 }
 $$('[data-relation]').forEach(b=>b.onclick=()=>{state.relation=b.dataset.relation;pressed('#geometry-mode','relation',state.relation);interfaceCaption();draw();});
 $('#touch-connected').onchange=e=>{state.touch=e.target.checked;interfaceCaption();draw();};
 function modelCaption(){
-  const action=state.candidate==='correct'?'修正姿态后，接触趋于均匀、阻力减小':'保持偏差继续前进，可能产生单侧接触与更大阻力';
-  $('#model-caption').textContent=(state.mode==='joint'?'联合生成的示意情境：':'给定动作后的定性后果：')+action+'。需要通过真实预测与控制实验验证。';
+  const action=state.candidate==='correct'?'pose correction leads to more balanced contact and less resistance':'advancing with a pose error may increase one-sided contact and resistance';
+  $('#model-caption').textContent=(state.mode==='joint'?'Illustrative joint output: ':'Illustrative action-conditioned future: ')+action+'.';
 }
 $$('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;pressed('#model-mode','mode',state.mode);modelCaption();draw();});
 $$('[data-candidate]').forEach(b=>b.onclick=()=>{state.candidate=b.dataset.candidate;pressed('#candidate-controls','candidate',state.candidate);modelCaption();draw();});
