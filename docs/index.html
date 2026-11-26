@@ -12,6 +12,7 @@
 <link href="assets/favicon.svg" rel="icon" type="image/svg+xml"/>
 <link href="assets/site.css" rel="stylesheet"/>
 <script src="assets/site.js" type="module"></script>
+<link rel="stylesheet" href="assets/workcell/workcell.css"/>
 </head>
 <body>
 <a class="skip" href="#deck">Skip to presentation</a>
@@ -46,26 +47,9 @@
 <p hidden="" id="data-error" role="alert">The measured point cloud could not be loaded. Please refresh to retry.</p>
 </div>
 </section>
-<section aria-labelledby="tab-handover" class="slide" hidden="" id="slide-handover" role="tabpanel">
-<div class="copy">
-<p class="eyebrow">UniGeom-X · Research direction</p>
-<h2>The task continues.<br/>The senses change.</h2>
-<p class="english-title">Shared Geometry for Cross-Modal Robotics</p>
-<p class="lead">Vision and depth locate the socket. After contact, touch reveals misalignment and guides the correction.</p>
-<div aria-label="Interaction stage" class="step-list" id="phase-controls">
-<button aria-pressed="true" data-phase="0"><span>01</span><div><strong>Approach</strong><p>Locate the target with vision and depth.</p></div></button>
-<button aria-pressed="false" data-phase="1"><span>02</span><div><strong>Make contact</strong><p>Read the local contact evidence.</p></div></button>
-<button aria-pressed="false" data-phase="2"><span>03</span><div><strong>Correct and insert</strong><p>Use feedback to correct the pose.</p></div></button>
-</div>
-<p class="chinese-note takeaway" lang="zh-CN">接近时靠视觉定位，接触后用触觉修正。感知方式变了，对目标和任务进度的理解应当延续。</p>
-</div>
-<div class="visual interaction-visual">
-<div class="visual-top"><span>One insertion, changing sensory evidence</span><button aria-label="Pause animation" aria-pressed="false" class="motion-toggle">Pause animation</button></div>
-<div class="scene-area"><svg aria-label="Illustrative gripper approach, contact and insertion" id="interaction-scene" role="img" viewbox="0 0 840 470"></svg></div>
-<div class="scene-controls"><label class="toggle"><input id="occlusion" type="checkbox"/><span class="switch"></span>Occlude the contact region</label><span class="phase-label" id="phase-label">Approach</span></div>
-<div class="memory-line"><span class="memory-dot"></span><span id="state-caption">Vision establishes the target; its identity stays in memory.</span></div>
-<p class="visual-note">Conceptual interaction, not an experimental rollout. Initial tasks: insertion and grasp/slip recovery.</p>
-</div>
+<section aria-labelledby="tab-handover" class="slide workcell-slide" hidden="" id="slide-handover" role="tabpanel">
+<div class="workcell-intro"><div><p class="eyebrow">UniGeom-X · Interactive task prototype</p><h2>Contact feedback keeps the grasp stable.</h2></div><p class="chinese-note" lang="zh-CN">搬运中，物体可能受到额外负载而滑动。观察接触反馈如何改变握持，再比较固定夹持力下的结果；这是后续连接独立感知模型的任务基础。</p></div>
+<div id="grasp-workcell" aria-label="Gentle grasp and slip recovery demonstration"><p>Loading the contact workcell…</p></div>
 </section>
 <section aria-labelledby="tab-interface" class="slide" hidden="" id="slide-interface" role="tabpanel">
 <div class="copy">

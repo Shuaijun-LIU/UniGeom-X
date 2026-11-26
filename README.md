@@ -9,7 +9,7 @@ The presentation is primarily in English, with one short Chinese explanation on 
 ## Five pages
 
 1. **From UniGeom:** lightweight interfaces connect independently trained perception and existing world-model dynamics. Reuses the first project's measured representation visualization.
-2. **UniGeom-X / sensory handover:** a robot uses vision and depth to approach a target, then adds tactile evidence for contact and insertion. Select the interaction stage or introduce local visual occlusion.
+2. **UniGeom-X / contact workcell:** explore a physical grasp-and-slip task in Recorded 3D or Live physics. Compare contact-force feedback against fixed grip under the same downward load, inspect finger-pad forces, and rotate or zoom the scene. This is a scripted task prototype, not a trained UniGeom-X result.
 3. **UniGeom-X / functional interfaces:** preserve independent encoders, align relevant shared relations, retain modality-specific information and carry task state forward. Compare state and transition relations; connect or disconnect the tactile branch.
 4. **UniGeom-M / native multimodal learning:** adapt a pretrained World-Action Model to jointly represent future observations and actions. Switch between joint generation and action-conditioned prediction; compare two qualitative action scenarios.
 5. **Research roadmap:** distinguish model reuse, modular sensory collaboration and native multimodal learning, while sharing environments, synchronized data and contact-rich tasks.
@@ -18,7 +18,7 @@ X investigates how existing independent sensory capabilities can work together. 
 
 ## Run locally
 
-No build tool or external CDN is required. Serve the `docs` directory over HTTP (ES modules and the local dataset require an HTTP origin):
+No build tool or external CDN is required to serve the included site. The workcell includes Three.js and an on-demand MuJoCo Wasm runtime; regeneration instructions are in [workcell/README.md](workcell/README.md). Serve the `docs` directory over HTTP (ES modules and the local dataset require an HTTP origin):
 
 ```bash
 python3 -m http.server 8000 --directory docs

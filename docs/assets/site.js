@@ -1,5 +1,5 @@
 import {GeometryView} from './vendor/unigeom-geometry.js';
-import {drawInteraction,drawInterface,drawModel,drawGlyphs} from './diagrams.js';
+import {drawInterface,drawModel,drawGlyphs} from './diagrams.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const keys=['unigeom','handover','interface','model','roadmap'];
@@ -8,16 +8,21 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={page:0,phase:0,occluded:false,touch:true,relation:'state',mode:'joint',candidate:'correct'};
 const paused=[reduced.matches,reduced.matches,reduced.matches,reduced.matches,true];
 let hero=null,pair=null,time=0,last=0,phaseShown=0,drawAt=-1;
+let workcell=null,workcellLoading=null;
+function updateWorkcell(){
+ if(state.page===1&&!workcellLoading){workcellLoading=import('./workcell/workcell.js').then(m=>m.mountWorkcell($('#grasp-workcell'))).then(w=>{workcell=w;w?.setActive(state.page===1);}).catch(e=>{$('#grasp-workcell').textContent='Unable to load workcell: '+e.message;console.error(e);});}
+ workcell?.setActive(state.page===1);
+}
 const scenes=[$('#interaction-scene'),$('#interface-scene'),$('#model-scene')];
 function pressed(parent,key,value){$$(parent+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===String(value))));}
 function draw(){
   if(state.page===0)hero?.drawHero();
-  if(state.page===1)drawInteraction(scenes[0],state,phaseShown);
+
   if(state.page===2)drawInterface(scenes[1],state);
   if(state.page===3)drawModel(scenes[2],state);
 }
 function motionUI(){
-  $$('.motion-toggle').forEach((b,i)=>{b.textContent=paused[i]?'Play animation':'Pause animation';b.setAttribute('aria-label',b.textContent);b.setAttribute('aria-pressed',String(paused[i]));});
+  $$('.motion-toggle').forEach(b=>{const i=$$('.slide').indexOf(b.closest('.slide'));b.textContent=paused[i]?'Play animation':'Pause animation';b.setAttribute('aria-label',b.textContent);b.setAttribute('aria-pressed',String(paused[i]));});
   $$('.slide').forEach((s,i)=>s.classList.toggle('motion-paused',paused[i]));
 }
 function go(index,updateHash=true){
@@ -30,6 +35,7 @@ function go(index,updateHash=true){
   $('#previous').disabled=state.page===0;$('#next').disabled=state.page===4;
   document.title=`${titles[state.page]} · UniGeom Series`;
   if(updateHash&&location.hash!=='#'+keys[state.page])history.pushState(null,'','#'+keys[state.page]);
+  updateWorkcell();
   requestAnimationFrame(draw);
 }
 $$('[data-page]').forEach(b=>b.onclick=()=>go(Number(b.dataset.page)));
@@ -38,23 +44,17 @@ $('#mobile-page').onchange=e=>go(Number(e.target.value));
 $('#previous').onclick=()=>go(state.page-1);$('#next').onclick=()=>go(state.page+1);
 window.addEventListener('hashchange',()=>go(Math.max(0,keys.indexOf(location.hash.slice(1))),false));
 window.addEventListener('keydown',e=>{
-  if(e.altKey||e.metaKey||e.ctrlKey||e.target.closest('input,select,textarea,.segmented,.step-list'))return;
+  if(e.altKey||e.metaKey||e.ctrlKey||e.target.closest('input,select,textarea,.segmented,.step-list,#grasp-workcell'))return;
   if(['ArrowRight','PageDown','ArrowLeft','PageUp','Home','End'].includes(e.key)){
     e.preventDefault();const n=e.key==='Home'?0:e.key==='End'?4:state.page+(['ArrowRight','PageDown'].includes(e.key)?1:-1);go(n);
     if(e.target.closest('[role=tablist]'))$(`[data-page="${state.page}"]`).focus();
   }
 });
 let swipe=null;
-$('#deck').addEventListener('touchstart',e=>{if(!e.target.closest('button,input,select,label'))swipe=[e.touches[0].clientX,e.touches[0].clientY];},{passive:true});
+$('#deck').addEventListener('touchstart',e=>{if(!e.target.closest('button,input,select,label,#grasp-workcell'))swipe=[e.touches[0].clientX,e.touches[0].clientY];},{passive:true});
 $('#deck').addEventListener('touchend',e=>{if(!swipe)return;const dx=e.changedTouches[0].clientX-swipe[0],dy=e.changedTouches[0].clientY-swipe[1];if(Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*1.8)go(state.page+(dx<0?1:-1));swipe=null;},{passive:true});
-$$('.motion-toggle').forEach((b,i)=>b.onclick=()=>{paused[i]=!paused[i];motionUI();draw();});
+$$('.motion-toggle').forEach(b=>b.onclick=()=>{const i=$$('.slide').indexOf(b.closest('.slide'));paused[i]=!paused[i];motionUI();draw();});
 reduced.addEventListener('change',e=>{if(e.matches){paused.fill(true);phaseShown=state.phase;}if(hero)hero.reduced=e.matches;motionUI();draw();});
-function phaseCaption(){
-  $('#phase-label').textContent=['Approach','Contact','Correct and insert'][state.phase];
-  $('#state-caption').textContent=state.phase===0?(state.occluded?'The target stays in memory; local pose must be updated from available evidence.':'Vision establishes the target; its identity stays in memory.'):state.phase===1?(state.occluded?'Touch supplies contact evidence when the view is blocked; the target is retained.':'Contact evidence updates the state without resetting the task.'):'Touch guides local corrections; vision and memory retain the global goal.';
-}
-$$('[data-phase]').forEach(b=>b.onclick=()=>{state.phase=Number(b.dataset.phase);pressed('#phase-controls','phase',state.phase);if(paused[1]||reduced.matches)phaseShown=state.phase;phaseCaption();draw();});
-$('#occlusion').onchange=e=>{state.occluded=e.target.checked;phaseCaption();draw();};
 function interfaceCaption(){
   $('#interface-caption').textContent=!state.touch?'Vision and depth remain connected. Adding touch introduces new contact evidence.':state.relation==='state'?'Relate local shape and pose while retaining the original contact evidence.':'Relate changes caused by the same interaction, without equating all features.';
 }
@@ -89,7 +89,6 @@ function frame(now){
   if(!document.hidden&&!paused[state.page]){
     time+=dt;
     if(hero&&state.page===0){hero.phase+=dt;hero.drawHero();}
-    if(state.page===1&&Math.abs(phaseShown-state.phase)>.001){phaseShown+=(state.phase-phaseShown)*Math.min(1,dt*5);if(now-drawAt>32){drawInteraction(scenes[0],state,phaseShown);drawAt=now;}}
     document.documentElement.style.setProperty('--flow-offset',String(-time*23));
     document.documentElement.style.setProperty('--contact-opacity',String(.45+.35*Math.sin(time*2)));
   }
