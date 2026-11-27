@@ -34,3 +34,10 @@ test('extended task clears the divider, rotates and seats after two disturbances
  for(const f of a.frames)for(const v of f.tangent.flat())assert.ok(Number.isFinite(v));
  assert.equal(scene.geoms.filter(g=>g.name?.startsWith('leg_')).length,4);
 });
+
+test('dropped block stays at its landing position without later scripted loads',()=>{
+ const dropped=b.frames.find(f=>f.dropped);assert.ok(dropped);assert.ok(dropped.time<7);
+ const rest=b.frames.filter(f=>f.time>=7),position=rest[0].object;
+ for(const f of rest){assert.equal(f.pulse,0);assert.ok(Math.hypot(...f.object.map((v,i)=>v-position[i]))<.0001);assert.equal(f.dropped,true);}
+ assert.equal(rest.at(-1).phase,'Placement failed');
+});

@@ -20,3 +20,15 @@ test('matched soft task contrasts grip pressure without fabricating damage',()=>
  assert.equal(a.frames.at(-1).phase,'Placed & recovered');assert.equal(b.frames.at(-1).phase,'Excess compression');
  const xml=Buffer.from(load('soft-physics')['soft-scene.xml'],'base64').toString();assert.ok(!xml.includes('<weld'));assert.equal((xml.match(/name="sponge_spring_/g)||[]).length,24);
 });
+
+const rotate=(q,v)=>{const [x,y,z,w]=q,c=[y*v[2]-z*v[1],z*v[0]-x*v[2],x*v[1]-y*v[0]],cc=[y*c[2]-z*c[1],z*c[0]-x*c[2],x*c[1]-y*c[0]];return v.map((n,i)=>n+2*w*c[i]+2*cc[i]);};
+const inverse=q=>[-q[0],-q[1],-q[2],q[3]];
+test('rendered sponge surface stays outside sensor pads within submillimetre contact tolerance',()=>{
+ const pads=scene.geoms.filter(g=>['left_pad','right_pad'].includes(g.name));let worst=0;
+ for(const e of [a,b])for(const f of e.frames)for(const pad of pads){const body=f.bodies.slice(pad.body*7,pad.body*7+7);
+  for(let k=0;k<f.soft.length;k+=3){const localBody=rotate(inverse(body.slice(3)),f.soft.slice(k,k+3).map((v,j)=>v-body[j]));const local=rotate(inverse(pad.quaternion),localBody.map((v,j)=>v-pad.position[j]));
+   if(Math.abs(local[0])<=pad.size[0]&&Math.abs(local[2])<=pad.size[2])worst=Math.max(worst,pad.size[1]-Math.abs(local[1]));
+  }
+ }
+ assert.ok(worst<.00025,`Surface penetrates pad by ${worst*1000} mm`);
+});

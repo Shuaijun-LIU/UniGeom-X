@@ -42,8 +42,8 @@ export function createSimulation(mj,{feedback=true}={}){
   if(t>=2&&t<3){a=b=1;u=0;}else if(t>=3&&t<5){a=1;b=2;u=(t-3)/2;}else if(t>=5&&t<8){a=b=2;u=0;}else if(t>=8&&t<9.5){a=2;b=3;u=(t-8)/1.5;}else if(t>=9.5&&t<12.5){a=3;b=4;u=(t-9.5)/3;}else if(t>=12.5&&t<14){a=4;b=5;u=(t-12.5)/1.5;}else if(t>=14&&t<17){a=5;b=6;u=(t-14)/3;}else if(t>=17&&t<18){a=b=6;u=0;}else if(t>=18){a=6;b=7;u=(t-18)/2;}
   const blend=smooth(u);for(let j=0;j<7;j++)data.ctrl[j]=poses[a][j]+blend*(poses[b][j]-poses[a][j]);
   const n=loads.reduce((s,x)=>s+x.normal,0),shear=loads.reduce((s,x)=>s+x.shear,0);
-  if(feedback&&t>2.3&&t<14&&n>.05){if(compression>.18)grip=Math.max(.4,grip-.004);else if(shear/n>.46)grip=Math.min(4.5,grip+.003);}
-  data.ctrl[7]=t<2||t>=17?5:-grip;
+  if(feedback&&t>2.3&&t<14&&n>.05){if(compression>.18)grip=Math.max(.4,grip-.004);else if(t>3.3&&data.xpos[object*3+2]>.10&&shear/n>.46)grip=Math.min(4.5,grip+.003);}
+  data.ctrl[7]=t<2||t>=17?5:-grip*smooth((t-2)/.3);
   const down=t>=5.5&&t<6.3?.12*Math.sin(Math.PI*(t-5.5)/.8):0,side=t>=10.5&&t<11.3?.10*Math.sin(Math.PI*(t-10.5)/.8):0;pulse=Math.hypot(down,side);
   data.xfrc_applied[object*6]=side;data.xfrc_applied[object*6+2]=-down;
   mj.mj_step(model,data);if(data.time<t)throw Error('Soft-body integration became unstable');contacts();

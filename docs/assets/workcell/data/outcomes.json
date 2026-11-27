@@ -22,13 +22,18 @@
     "id": "fixed-grip",
     "success": false,
     "recovered": false,
-    "peakSlip_mm": 261.2730404814193,
-    "maxNormal_N": 4.457133537040723,
+    "peakSlip_mm": 261.2525757294825,
+    "maxNormal_N": 4.7159460601100935,
     "events": [
       {
         "time": 5.503999999999616,
         "label": "Downward load",
         "kind": "disturbance"
+      },
+      {
+        "time": 5.801999999999583,
+        "label": "Grip lost",
+        "kind": "drop"
       }
     ]
   }

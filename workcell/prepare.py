@@ -56,11 +56,13 @@ soft.find('option').set('cone','elliptic')
 soft.find('option').set('noslip_iterations','4')
 soft.find('option').set('impratio','10')
 sw=soft.find('worldbody')
-# Only the tactile pads interact with the sponge in this controlled task.
+# Contact geometry covers the sensor pads and adjacent finger/hand hardware.
 for body in sw.iter('body'):
  for geom in body.findall('geom'):
   if geom.get('name') not in ['left_pad','right_pad']:
    geom.set('contype','0');geom.set('conaffinity','0')
+   if body.get('name') in ['hand','left_finger','right_finger'] and geom.get('class')=='collision':
+    geom.set('contype','1');geom.set('conaffinity','2')
   else:geom.set('size','.025 .005 .028')
 sw.remove(next(b for b in sw.findall('body') if b.get('name')=='object'))
 for g in sw.findall('geom'):
@@ -79,7 +81,7 @@ for i,(x,y,z) in enumerate(( (x,y,z) for x in [-1,1] for y in [-1,1] for z in [-
  node=ET.SubElement(carrier,'body',name=f'sponge_node_{i}',pos=f'{x*.017} {y*.015} {z*.023}')
  for axis,direction in enumerate(['1 0 0','0 1 0','0 0 1']):
   ET.SubElement(node,'joint',name=f'sponge_spring_{i}_{axis}',type='slide',axis=direction,stiffness='80' if axis==1 else '200',damping='.15',limited='true',range='-.014 .014')
- ET.SubElement(node,'geom',name=f'sponge_contact_{i}',type='sphere',size='.008',mass='.001',contype='2',conaffinity='1',friction='1.0 .01 .001',condim='4',solref='.008 1',rgba='.88 .67 .26 1',group='3')
+ ET.SubElement(node,'geom',name=f'sponge_contact_{i}',type='box',size='.008 .008 .008',mass='.001',contype='2',conaffinity='1',friction='1.0 .01 .001',condim='4',priority='1',solref='.002 1',solimp='.995 .9999 .001',rgba='.88 .67 .26 1',group='3')
 soft_files={'soft-scene.xml':base64.b64encode(ET.tostring(soft,encoding='unicode').encode()).decode()}
 (out/'soft-physics.json.gz').write_bytes(gzip.compress(json.dumps(soft_files,separators=(',',':')).encode(),mtime=0))
 print('Packaged soft-scene XML; robot meshes are shared with the rigid task.')
