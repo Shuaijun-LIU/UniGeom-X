@@ -86,3 +86,8 @@ results are superseded by `data/soft-outcomes.json`.
 The workcell camera is closer for both objects. Rubber uses irregular molded
 grain; mineral laminate uses fine embedded flecks. Color, micro-height and
 roughness are generated independently at 512-pixel resolution.
+
+The default view is Close-up for both objects. Each comparison panel places the
+larger tactile images, metrics and force chart in a side column. Chart buffers
+track their displayed dimensions and device pixel ratio, including paused window
+resizes, so axis labels retain their normal proportions.
