@@ -3,18 +3,18 @@
     "id": "soft-contact-feedback",
     "success": true,
     "placed": true,
-    "peakCompression": 0.19712873282253884,
-    "finalCompression": 0,
-    "peakSlip_mm": 0.09164856146473555,
-    "maxNormal_N": 3.3380862617487903
+    "peakCompression": 0.2406988425298181,
+    "finalCompression": 0.0014707534120530497,
+    "peakSlip_mm": 0.02255433930486994,
+    "maxNormal_N": 3.55146301976374
   },
   {
     "id": "soft-fixed-grip",
     "success": false,
     "placed": true,
-    "peakCompression": 0.5446840653386964,
-    "finalCompression": 0.004725662459738933,
-    "peakSlip_mm": 0.09147641161799669,
-    "maxNormal_N": 8.169041615337042
+    "peakCompression": 0.5869484184641733,
+    "finalCompression": 0,
+    "peakSlip_mm": 0.022350411751415056,
+    "maxNormal_N": 14.517920974754794
   }
 ]

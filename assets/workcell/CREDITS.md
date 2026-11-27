@@ -48,7 +48,7 @@ required. Visual bevels preserve the collision boxes' outer dimensions.
 
 ## Soft sponge task
 
-The second object is an original reduced elastic proxy: eight compliant contact
+The second object is an original reduced elastic proxy: eight compliant box contact
 nodes on a free carrier, using native MuJoCo spring joints and frictional
 contacts. Surface vertices follow the contact bodies. It is not a volumetric FEM
 model or a calibrated material asset. No robot–object attachment is used.
@@ -61,3 +61,12 @@ grip and feedback controller both place the object but produce different peak
 compression. A 35% demonstration bound does not imply physical damage. The
 soft gel illustration spreads the measured contact-node loads; it remains an
 analytic visual approximation, not sensor-camera footage.
+
+## Synchronized comparison revision
+
+The two controllers are shown concurrently from a shared clock. Their cameras
+are linked, and each has its own tactile and force readouts. The original rigid
+recordings are superseded by corrected executions that stop external load pulses
+after grip loss. The sponge records use box-shaped compliant contact nodes whose
+outer corners match the displayed surface, with adjacent finger/hand collision
+geometry enabled. The contact bound remains a demonstration criterion.

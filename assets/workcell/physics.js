@@ -20,15 +20,16 @@ export function createSimulation(mj,{feedback=true,disturbance=1.3}={}){
  const err=Math.hypot(...p.map((v,i)=>scratch.site_xpos[site*3+i]-v));if(err>.001)throw Error('IK target outside tolerance: '+err);
  poses.push(q);prev=q;}
  poses[0].forEach((v,i)=>{data.qpos[addresses[i]]=v;data.ctrl[i]=v;});data.ctrl[7]=5;mj.mj_forward(model,data);
- let grip=1.8,baseOffset=null,lastZ=null,lastHandZ=null,slip=0,peakSlip=0,event=false,recovered=false,done=false;
+ let grip=1.8,baseOffset=null,lastZ=null,lastHandZ=null,slip=0,peakSlip=0,event=false,recovered=false,done=false,dropped=false,lifted=false;
  let loads=[{normal:0,shear:0,points:[],tangent:[0,0]},{normal:0,shear:0,points:[],tangent:[0,0]}];const forceBuffer=new mj.DoubleBuffer(6);
  const events=[];
  const phase=t=>t<2?'Approach':t<3?'Establish contact':t<5.5?'Lift':t<8?(recovered?'Grip recovered':'Respond to load'):t<9.5?'Clear the divider':t<12.5?'Turn & transfer':t<14?'Align with pocket':t<17?'Seat in pocket':t<18?'Release':'Withdraw';
  function contacts(){
   loads=[{normal:0,shear:0,points:[],tangent:[0,0]},{normal:0,shear:0,points:[],tangent:[0,0]}];
+  const contactList=data.contact;
   for(let k=0;k<data.ncon;k++){
-   const c=data.contact.get(k);let p=-1;
-   if(c.geom1===sample)p=pads.indexOf(c.geom2);if(c.geom2===sample)p=pads.indexOf(c.geom1);if(p<0)continue;
+   const c=contactList.get(k);let p=-1;
+   if(c.geom1===sample)p=pads.indexOf(c.geom2);if(c.geom2===sample)p=pads.indexOf(c.geom1);if(p<0){c.delete();continue;}
    mj.mj_contactForce(model,data,k,forceBuffer);const force=forceBuffer.GetView();
    const normal=Math.max(0,force[0]),shear=Math.hypot(force[1],force[2]);loads[p].normal+=normal;loads[p].shear+=shear;
    const g=pads[p],delta=[0,1,2].map(j=>c.pos[j]-data.geom_xpos[g*3+j]);const m=data.geom_xmat.subarray(g*9,g*9+9);
@@ -36,8 +37,9 @@ export function createSimulation(mj,{feedback=true,disturbance=1.3}={}){
    const sign=c.geom2===g?1:-1;
    const worldForce=[0,1,2].map(j=>sign*(c.frame[3+j]*force[1]+c.frame[6+j]*force[2]));
    loads[p].tangent[0]+=worldForce.reduce((v,x,i)=>v+x*m[i*3],0);
-   loads[p].tangent[1]+=worldForce.reduce((v,x,i)=>v+x*m[i*3+2],0);
+   loads[p].tangent[1]+=worldForce.reduce((v,x,i)=>v+x*m[i*3+2],0);c.delete();
   }
+  contactList.delete();
  }
  function step(){
   if(done)return;
@@ -56,11 +58,14 @@ export function createSimulation(mj,{feedback=true,disturbance=1.3}={}){
   // Ideal contact-force feedback; no learned policy or optical tactile estimator.
   if(feedback&&t>3.2&&t<14&&n>.1&&s/n>.46){grip=Math.min(9,grip+.032);}
   data.ctrl[7]=t<2?5:t>=17?5:-grip;
-  const pulse=t>=5.5&&t<6.3?disturbance*Math.sin(Math.PI*(t-5.5)/.8):0;
+  const held=!dropped&&n>.05;
+  const pulse=held&&t>=5.5&&t<6.3?disturbance*Math.sin(Math.PI*(t-5.5)/.8):0;
   data.xfrc_applied[object*6+2]=-pulse;
-  data.xfrc_applied[object*6]=t>=10.5&&t<11.3?.65*Math.sin(Math.PI*(t-10.5)/.8):0;
-  mj.mj_step(model,data);contacts();
+  data.xfrc_applied[object*6]=held&&t>=10.5&&t<11.3?.65*Math.sin(Math.PI*(t-10.5)/.8):0;
+  mj.mj_step(model,data);if(data.time<t)throw Error("Rigid-body integration became unstable");contacts();
   const z=data.xpos[object*3+2],hz=data.site_xpos[site*3+2];
+  if(z>.14)lifted=true;
+  if(lifted&&t<17&&hz-z>.09&&!dropped){dropped=true;events.push({time:data.time,label:"Grip lost",kind:"drop"});}
   if(t>4.8&&baseOffset===null)baseOffset=z-hz;
   if(baseOffset!==null&&t<17){slip=Math.max(0,baseOffset-(z-hz));peakSlip=Math.max(peakSlip,slip);}
   if(t>=5.5&&!event){event=true;events.push({time:data.time,label:'Downward load',kind:'disturbance'});}
@@ -72,7 +77,7 @@ export function createSimulation(mj,{feedback=true,disturbance=1.3}={}){
  const rotation=data.xmat.subarray(object*9,object*9+9),yaw=Math.atan2(rotation[3],rotation[0]);
  const angleError=Math.abs(Math.atan2(Math.sin(yaw-Math.PI/2),Math.cos(yaw-Math.PI/2)));
  const success=done&&Math.abs(p[0]-.46)<.01&&Math.abs(p[1]-.25)<.01&&p[2]>.030&&p[2]<.047&&angleError<.22&&rotation[8]>.97;
- return {time:Number(data.time.toFixed(6)),phase:done?(success?'Seated in pocket':'Placement failed'):(data.time>5.5&&data.time<14&&p[2]<.08?'Object dropped':phase(data.time)),normal:loads.map(x=>x.normal),shear:loads.map(x=>x.shear),tangent:loads.map(x=>x.tangent),patches:loads.map(x=>x.points),grip,slip,peakSlip,pulse:Math.hypot(data.xfrc_applied[object*6],data.xfrc_applied[object*6+2]),object:p,yaw,angleError,recovered,done,success};}
+ return {time:Number(data.time.toFixed(6)),phase:done?(success?'Seated in pocket':'Placement failed'):(dropped?'Object dropped':phase(data.time)),normal:loads.map(x=>x.normal),shear:loads.map(x=>x.shear),tangent:loads.map(x=>x.tangent),patches:loads.map(x=>x.points),grip,slip,peakSlip,pulse:Math.hypot(data.xfrc_applied[object*6],data.xfrc_applied[object*6+2]),object:p,dropped,yaw,angleError,recovered,done,success};}
  function bodyFrames(){const out=[];for(let i=0;i<model.nbody;i++)out.push(...data.xpos.subarray(i*3,i*3+3),data.xquat[i*4+1],data.xquat[i*4+2],data.xquat[i*4+3],data.xquat[i*4]);return out;}
  return {model,data,step,snapshot,bodyFrames,events,ids:{object,hand,pads,sample},dispose(){forceBuffer.delete();scratch.delete();data.delete();model.delete();}};
 }
